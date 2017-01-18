@@ -10,7 +10,7 @@ Returns the IDs of any monitors in wich the given regexp pattern is used in the 
 
 # Configuration
 
-Create a file `.datadog.yaml` and make it look like the following:
+Create a file `~/.datadog.yaml` and make it look like the following:
 
 ```yaml
 ---
