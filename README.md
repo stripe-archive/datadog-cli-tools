@@ -1,5 +1,13 @@
 # Tools
 
+## dashboards-using-metrics
+
+```
+dashboards-using-metrics some.metric.name
+```
+
+Returns the IDs of any screenboards or timeboards in wich the given regexp pattern is used in the definition.
+
 ## monitors-using-metrics
 
 ```
