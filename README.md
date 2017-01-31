@@ -6,7 +6,7 @@
 dashboards-using-metrics some.metric.name
 ```
 
-Returns the IDs of any screenboards or timeboards in wich the given regexp pattern is used in the definition.
+Returns the IDs of any screenboards or timeboards in which the given regexp pattern is used in the definition.
 
 ## monitors-using-metrics
 
@@ -14,7 +14,7 @@ Returns the IDs of any screenboards or timeboards in wich the given regexp patte
 monitors-using-metrics some.metric.name
 ```
 
-Returns the IDs of any monitors in wich the given regexp pattern is used in the `query`.
+Returns the IDs of any monitors in which the given regexp pattern is used in the `query`.
 
 # Configuration
 
