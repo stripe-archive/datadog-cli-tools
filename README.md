@@ -24,4 +24,10 @@ Create a file `~/.datadog.yaml` and make it look like the following:
 ---
 api_key: xxx
 app_key: xxx
+templates:
+  dashboard: 'http://url/dash/%{id}'
+  screenboard: 'http://url/screen/%{id}'
+  monitor: 'http://url/monitors#%{id}'
 ```
+
+The templates are optional and default to just printing the id.
