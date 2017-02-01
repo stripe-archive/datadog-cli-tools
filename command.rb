@@ -4,6 +4,9 @@ require 'optparse'
 require 'yaml'
 require 'logger'
 
+class ArgumentError < StandardError
+end
+
 class Command
   def initialize()
     begin
@@ -35,7 +38,9 @@ class Command
       config_file: File.join(Dir.home, '/.datadog.yaml')
     }
 
-    OptionParser.new do |parser|
+    parser = OptionParser.new do |parser|
+      @parser = parser
+
       parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
         options[:log_level] = Logger::DEBUG if v
       end
@@ -44,7 +49,7 @@ class Command
         options[:use_color] = v
       end
 
-      parser.on("--config", "Specify config file") do |v|
+      parser.on("--config [file]", "Specify config file") do |v|
         options[:config_file] = v
       end
 

@@ -117,10 +117,14 @@ class DashboardsUsingMetrics < Command
   end
 
   def run()
-    metric = @args[0] || raise("You must specify a metric name!")
+    raise ArgumentError.new("You must specify a metric name!") unless @args.length > 0
+    metric = @args[0]
 
     print_dashboard_matches(metric)
     print_screenboard_matches(metric)
+  rescue ArgumentError => e
+    puts @parser
+    puts e.to_s
   end
 end
 
