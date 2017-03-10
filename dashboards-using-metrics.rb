@@ -29,6 +29,8 @@ class DashboardsUsingMetrics < Command
       end
 
       next acc unless queries.length > 0
+      puts(acc)
+      puts(queries)
 
       acc + [{
         title: graph.fetch('title', 'Unknown'),
@@ -47,6 +49,9 @@ class DashboardsUsingMetrics < Command
       end
 
       next acc unless queries.length > 0
+
+      puts(acc)
+      puts(queries)
 
       acc + [{
         title: widget.fetch('title_text', 'Unknown'),
