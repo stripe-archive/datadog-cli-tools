@@ -58,9 +58,12 @@ class DashboardsUsingMetrics < Command
   def print_dashboard_matches(metric)
     regex = metric_regex(metric)
     @logger.info("Looking for dashboards using metric: #{regex.inspect}")
-    _, dashes = @dog_client.get_dashboards()
-    dashes['dashes'].each do |dash|
-      status_code, definition = @dog_client.get_dashboard(dash['id'])
+    _, dashes = with_retries { @dog_client.get_dashboards() }
+    each_with_status_and_delay(
+      dashes['dashes'],
+      template: '%{title} (#%{id})...',
+    ) do |dash|
+      status_code, definition = with_retries { @dog_client.get_dashboard(dash['id']) }
 
       if status_code != '200'
         @logger.warn("Got status code #{status_code} querying dashboard #{dash['id']}")
@@ -88,10 +91,13 @@ class DashboardsUsingMetrics < Command
   def print_screenboard_matches(metric)
     regex = metric_regex(metric)
     @logger.info("Looking for screenboards using metric: #{regex.inspect}")
-    _, screens = @dog_client.get_all_screenboards()
+    _, screens = with_retries { @dog_client.get_all_screenboards() }
 
-    screens['screenboards'].each do |screen|
-      status_code, definition = @dog_client.get_screenboard(screen['id'])
+    each_with_status_and_delay(
+      screens['screenboards'],
+      template: '%{title}: (#%{id})...'
+    ) do |screen|
+      status_code, definition = with_retries { @dog_client.get_screenboard(screen['id']) }
 
       if status_code != '200'
         @logger.warn("Got status code #{status_code} querying dashboard #{dash['id']}")
@@ -122,6 +128,7 @@ class DashboardsUsingMetrics < Command
 
     print_dashboard_matches(metric)
     print_screenboard_matches(metric)
+    @logger.info("Complete")
   rescue ArgumentError => e
     puts @parser
     puts e.to_s

@@ -22,9 +22,12 @@ class MonitorsUsingMetrics < Command
   def print_monitor_matches(metric)
     regex = metric_regex(metric)
     @logger.info("Looking for monitors using metric: #{regex.inspect}")
-    _, monitors = @dog_client.get_all_monitors()
+    _, monitors = with_retries { @dog_client.get_all_monitors() }
 
-    monitors.each do |monitor|
+    each_with_status_and_delay(
+      monitors,
+      template: '%{name} (#%{id})...',
+    ) do |monitor|
       next unless monitor['query'] =~ regex
       url = template('monitor', id: monitor['id'])
 
@@ -38,6 +41,7 @@ class MonitorsUsingMetrics < Command
     metric = @args[0]
 
     print_monitor_matches(metric)
+    @logger.info("Complete")
   rescue ArgumentError => e
     puts @parser
     puts e.to_s
