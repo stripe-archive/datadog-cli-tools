@@ -5,11 +5,19 @@ require_relative 'command'
 class GetDowntime < Command
 
   def run()
-    id = ARGV[0] || raise("You must specify an ID!")
-    @logger.info("Looking for downtime: '#{id}'")
-    result = @dog_client.get_downtime(id)
+    super do
+      raise ArgumentError.new("You must specify an ID!") unless ARGV[0]
+    end
+    id = ARGV[0]
 
-    puts(result)
+    @error_logger.info("Looking for downtime: '#{id}'")
+    status, result = @dog_client.get_downtime(id)
+
+    if status = 200
+      puts(result)
+    else
+      @error_logger.error(result)
+    end
   end
 end
 

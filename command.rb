@@ -5,35 +5,27 @@ require 'yaml'
 require 'logger'
 
 class ArgumentError < StandardError; end
+class ConfigError < StandardError; end
 class RetryError < StandardError; end
 
 class Command
   DEFAULT_DELAY = 0.5
   DEFAULT_RETRIES = 2
 
+  DEFAULT_OPTIONS = {
+    use_color: STDOUT.isatty,
+    log_level: Logger::INFO,
+    config_file: File.join(Dir.home, '/.datadog.yaml'),
+    delay: DEFAULT_DELAY,
+    retries: DEFAULT_RETRIES
+  }.freeze
+
   def initialize()
-    begin
-      @options, @args = _parse_args(ARGV)
-
-      config = YAML.load_file(@options[:config_file])
-
-      @api_key = config['api_key']
-      @app_key = config['app_key']
-
-      @templates = config.fetch('templates', {})
-
-      @dog_client = Dogapi::Client.new(@api_key, @app_key)
-
-      @status_printed = false
-
-      @logger = Logger.new(STDOUT)
-      @logger.formatter = method(:format_log)
-      @logger.level = @options[:log_level]
-    rescue StandardError => e
-      STDERR.puts("Error loading YAML file `~/.datadog.yaml`: #{e.message}")
-      exit(-1)
-    end
+    @options = DEFAULT_OPTIONS.dup
+    reconfigure(false)
   end
+
+  private
 
   def status(msg)
     @last_status = msg
@@ -47,7 +39,7 @@ class Command
 
     @status_printed = true
 
-    puts(str)
+    STDERR.puts(str)
   end
 
   def keeping_status
@@ -57,16 +49,12 @@ class Command
 
   def _parse_args(_argv)
     argv = _argv.dup
-    options = {
-      use_color: STDOUT.isatty,
-      log_level: Logger::INFO,
-      config_file: File.join(Dir.home, '/.datadog.yaml'),
-      delay: DEFAULT_DELAY,
-      retries: DEFAULT_RETRIES
-    }
+    options = {}
 
     parser = OptionParser.new do |parser|
       @parser = parser
+
+      parser.banner = "Usage: #{$0} [options]"
 
       parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
         options[:log_level] = Logger::DEBUG if v
@@ -77,24 +65,24 @@ class Command
       end
 
       parser.on(
-        "-d [secs]",
-        "--delay [secs]",
+        "-d SECS",
+        "--delay SECS",
         Float,
-        "Delay between requests (default: #{DEFAULT_DELAY}"
+        "Delay between requests (default: #{DEFAULT_DELAY})"
       ) do |v|
         options[:delay] = v
       end
 
       parser.on(
-        "-r [num]",
-        "--retries [num]",
+        "-r NUM",
+        "--retries NUM",
         Integer,
-        "Number of retry attempts (default: #{DEFAULT_RETRIES}"
+        "Number of retry attempts (default: #{DEFAULT_RETRIES})"
       ) do |v|
         options[:retries] = v
       end
 
-      parser.on("--config [file]", "Specify config file") do |v|
+      parser.on("--config FILE", "Specify config file") do |v|
         options[:config_file] = v
       end
 
@@ -104,7 +92,9 @@ class Command
       end
     end.parse!(argv)
 
-    [options, argv]
+    [@options.merge(options), argv]
+  rescue OptionParser::MissingArgument => e
+    raise ArgumentError.new("Switch(es) require an argument: #{e.args.join(', ')}")
   end
 
   def format_msg(severity, timestamp, progname, msg)
@@ -207,7 +197,53 @@ class Command
     @templates.fetch(type, '%{id}') % context
   end
 
+  def load_config(file, fatal)
+    config = YAML.load_file(@options[:config_file])
+    raise ConfigError.new("Invalid config file") unless config.respond_to?(:fetch)
+
+    @api_key = config.fetch('api_key', nil)
+    @app_key = config.fetch('app_key', nil)
+
+    @templates = config.fetch('templates', {})
+
+    @dog_client = Dogapi::Client.new(@api_key, @app_key)
+
+    raise ConfigError.new("Missing api or app key") if @api_key.nil? || @app_key.nil?
+  rescue StandardError => e
+    raise e, "Unable to load config from #{@options[:config_file]}: #{e.message}" if fatal
+  end
+
+  def reconfigure(fatal=true)
+    @logger = Logger.new(STDOUT)
+    @logger.level = @options[:log_level]
+    @logger.formatter = method(:format_log)
+
+    @error_logger = Logger.new(STDERR)
+    @error_logger.level = @options[:log_level]
+    @error_logger.formatter = method(:format_log)
+
+    @api_key = nil
+    @app_key = nil
+    @templates = {}
+    @dog_client = nil
+
+    load_config(@options[:config_file], fatal)
+  end
+
   def run
-    puts("Implement me!")
+    @options, @args = _parse_args(ARGV)
+    yield if block_given?
+    reconfigure(true)
+  rescue ArgumentError, ConfigError => e
+    puts @parser
+    @error_logger.error(e.to_s)
+    exit(1)
+  rescue StandardError => e
+    @error_logger.error(e.to_s)
+    e.backtrace.each do |line|
+      @error_logger.error(line)
+    end
+
+    exit(1)
   end
 end
