@@ -3,6 +3,8 @@
 ## dashboards-using-metrics
 
 Returns the IDs of any screenboards or timeboards in which the given regexp pattern is used in the definition.
+- Defaults to no regular expression (`.` will be a period) -- use `--regex` to enable regex matching)
+- Verbose mode will also print the query found for each dashboard
 
 ```
 Usage: ./dashboards-using-metrics.rb [options] <metric>
@@ -31,6 +33,8 @@ Usage: ./get-downtime.rb [options]
 ## monitors-using-metrics
 
 Returns the IDs of any monitors in which the given regexp pattern is used in the `query`.
+- Defaults to no regular expression (`.` will be a period) -- use `--regex` to enable regex matching)
+- Verbose mode will also print the query found for each dashboard
 
 ```
 Usage: ./monitors-using-metrics.rb [options] <metric>
@@ -45,7 +49,8 @@ Example: ./monitors-using-metrics.rb 'system.load.1'
 
 ## query-metrics
 
-Runs a query and returns the data points that would be charted:
+Runs a query and returns the data points that would be charted.
+- See [Chronic's docs](https://github.com/mojombo/chronic) for date/time formats supported by `--from` and `--to`
 
 ```
 Usage: ./query-metrics.rb [options] <query>
