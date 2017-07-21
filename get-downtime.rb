@@ -13,7 +13,7 @@ class GetDowntime < Command
     @error_logger.info("Looking for downtime: '#{id}'")
     status, result = @dog_client.get_downtime(id)
 
-    if status = 200
+    if status == 200
       puts(result)
     else
       @error_logger.error(result)
