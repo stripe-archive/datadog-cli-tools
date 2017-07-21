@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    chronic (0.10.2)
     dogapi (1.24.0)
       multi_json
     dogstatsd-ruby (2.2.0)
@@ -11,9 +12,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  chronic
   dogapi
   dogstatsd-ruby
   splunk-sdk-ruby
 
 BUNDLED WITH
-   1.11.2
+   1.15.2
