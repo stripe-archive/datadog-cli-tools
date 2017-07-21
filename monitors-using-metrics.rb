@@ -4,6 +4,9 @@ require_relative 'command'
 
 class MonitorsUsingMetrics < Command
   def parse_args(options, parser)
+    parser.banner = "Usage: #{$0} [options] <metric>\n"+
+                    "Example: #{$0} 'system.load.1'"
+
     options[:is_regex] = false
 
     parser.on('-r', '--[no-]regex', 'Input is a regular expression (don\'t quote)') do |v|
@@ -34,13 +37,13 @@ class MonitorsUsingMetrics < Command
   end
 
   def run()
-    raise ArgumentError.new("You must specify a metric name!") unless @args.length > 0
+    super do
+      raise ArgumentError.new("You must specify a metric name!") unless @args.length > 0
+    end
+
     metric = @args[0]
 
     print_monitor_matches(metric)
-  rescue ArgumentError => e
-    puts @parser
-    puts e.to_s
   end
 end
 
