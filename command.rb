@@ -11,7 +11,7 @@ class RetryError < StandardError; end
 class Command
   DEFAULT_DELAY = 0.5
   DEFAULT_RETRIES = 2
-  
+
   DEFAULT_OPTIONS = {
     use_color: STDOUT.isatty,
     log_level: Logger::INFO,
@@ -68,7 +68,7 @@ class Command
         "-d SECS",
         "--delay SECS",
         Float,
-        "Delay between requests (default: #{DEFAULT_DELAY}"
+        "Delay between requests (default: #{DEFAULT_DELAY})"
       ) do |v|
         options[:delay] = v
       end
@@ -77,7 +77,7 @@ class Command
         "-r NUM",
         "--retries NUM",
         Integer,
-        "Number of retry attempts (default: #{DEFAULT_RETRIES}"
+        "Number of retry attempts (default: #{DEFAULT_RETRIES})"
       ) do |v|
         options[:retries] = v
       end
