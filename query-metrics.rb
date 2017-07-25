@@ -20,8 +20,8 @@ class QueryMetrics < Command
     end
 
     parser.on('-t SPEC', '--to SPEC', 'To date, which can be anything Chronic can parse (https://github.com/mojombo/chronic). Defaults to now') do |t|
-      parsed = Chronic.parse(f)
-      raise ArgumentError.new("Invalid time specification: '#{f}'") if parsed.nil?
+      parsed = Chronic.parse(t)
+      raise ArgumentError.new("Invalid time specification: '#{t}'") if parsed.nil?
       options[:to] = parsed
     end
 
