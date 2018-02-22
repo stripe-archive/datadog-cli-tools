@@ -8,9 +8,14 @@ class MonitorsUsingMetrics < Command
                     "Example: #{$0} 'system.load.1'"
 
     options[:is_regex] = false
+    options[:file] = nil
 
     parser.on('-r', '--[no-]regex', 'Input is a regular expression (don\'t quote)') do |v|
       options[:is_regex] = v
+    end
+
+    parser.on('-fFILE', '--file=FILE', String, 'File to store queries') do |v|
+      options[:file] = File.new(v, 'a')
     end
   end
 
@@ -36,6 +41,10 @@ class MonitorsUsingMetrics < Command
 
       @logger.info "Found: #{monitor['name']} - #{url}"
       @logger.debug "  #{monitor['query']}"
+      if @options[:file]
+        @options[:file].puts(monitor['query'])
+        @options[:file].flush
+      end
     end
   end
 
