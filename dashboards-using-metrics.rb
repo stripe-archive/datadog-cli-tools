@@ -8,9 +8,14 @@ class DashboardsUsingMetrics < Command
                     "Example: #{$0} 'system.load.1'"
 
     options[:is_regex] = false
+    options[:file] = nil
 
     parser.on('-r', '--[no-]regex', 'Input is a regular expression (don\'t quote)') do |v|
       options[:is_regex] = v
+    end
+
+    parser.on('-fFILE', '--file=FILE', String, 'File to store queries') do |v|
+      options[:file] = File.new(v, 'a')
     end
   end
 
@@ -83,6 +88,10 @@ class DashboardsUsingMetrics < Command
           @logger.debug "  #{graph[:title]}"
           graph[:queries].each do |query|
             @logger.debug "    #{query}"
+            if @options[:file]
+              @options[:file].puts(query)
+              @options[:file].flush
+            end
           end
         end
 
@@ -117,6 +126,10 @@ class DashboardsUsingMetrics < Command
           @logger.debug "  #{graph[:title]}"
           graph[:queries].each do |query|
             @logger.debug "    #{query}"
+            if @options[:file]
+              @options[:file].puts(query)
+              @options[:file].flush
+            end
           end
         end
 
